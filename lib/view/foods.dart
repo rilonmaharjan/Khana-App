@@ -49,15 +49,21 @@ class _FoodState extends State<Food> {
                           MaterialPageRoute(
                               builder: (context) => const Search()))),
                       child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Color.fromARGB(255, 235, 231, 231),
-                          ),
-                          child: const Icon(
-                            Icons.search,
-                            size: 29,
-                          )),
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(100),
+                            color: const Color.fromARGB(255, 245, 244, 244),
+                            boxShadow: const [
+                              BoxShadow(
+                                  color: Color.fromARGB(255, 185, 184, 184),
+                                  offset: Offset(2, 2),
+                                  blurRadius: 2)
+                            ]),
+                        child: const Icon(
+                          Icons.search,
+                          color: Colors.black,
+                          size: 20,
+                        )),
                     ),
                   ],
                 ),

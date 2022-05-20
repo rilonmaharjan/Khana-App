@@ -18,8 +18,10 @@ class Order extends StatefulWidget {
 class _OrderState extends State<Order> {
   int quantity = 1;
 
+  // ignore: prefer_typing_uninitialized_variables
   var total;
 
+  @override
   void initState() {
    // total = 200;
    total=int.parse(widget.desc);
@@ -111,7 +113,7 @@ class _OrderState extends State<Order> {
                         )),
                   ],
                 ),
-                const SizedBox(height: 25),
+                const SizedBox(height: 23),
                 Text(
                   widget.title,
                   style: const TextStyle(
@@ -131,14 +133,14 @@ class _OrderState extends State<Order> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 const Divider(
                   indent: 1,
                   endIndent: 1,
                   thickness: 0.5,
                   color: Color.fromARGB(255, 201, 198, 198),
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: 2),
                 Row(
                   children: [
                     const Text(
@@ -353,6 +355,7 @@ class _OrderState extends State<Order> {
                     Text("Rs. ${100 + total}", style: const TextStyle(fontWeight: FontWeight.w600),),
                   ],
                 ),
+                const SizedBox(height: 20,)
               ],
             ),
           ),

@@ -221,25 +221,29 @@ class _KhanaState extends State<Khana> {
                                 height: 17,
                               ),
                               Row(
-                                children: const [
-                                  SizedBox(
-                                    width: 8,
+                                children:  [
+                                  const SizedBox(
+                                    width: 7,
                                   ),
-                                  Text('8',
+                                  const Text('8',
                                       style: TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.w600,
                                           color: Colors.black)),
-                                  SizedBox(
+                                  const SizedBox(
                                     width: 8,
                                   ),
-                                  Text(
-                                    'Special Drinks',
-                                    style: TextStyle(
-                                        fontSize: 17,
-                                        fontWeight: FontWeight.w500,
-                                        color:
-                                            Color.fromARGB(255, 146, 145, 145)),
+                                  SizedBox(
+                                    width: MediaQuery.of(context).size.width*0.3,
+                                    child: const Text(
+                                      'Special Achar', overflow: TextOverflow.ellipsis,
+                                      
+                                      style: TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.w500,
+                                          color:
+                                              Color.fromARGB(255, 146, 145, 145)),
+                                    ),
                                   )
                                 ],
                               )
@@ -290,25 +294,28 @@ class _KhanaState extends State<Khana> {
                                 height: 14,
                               ),
                               Row(
-                                children: const [
-                                  SizedBox(
-                                    width: 9,
+                                children:  [
+                                  const SizedBox(
+                                    width: 5,
                                   ),
-                                  Text('12',
+                                  const Text('12',
                                       style: TextStyle(
                                           fontSize: 22,
                                           fontWeight: FontWeight.w600,
                                           color: Colors.black)),
-                                  SizedBox(
+                                  const SizedBox(
                                     width: 8,
                                   ),
-                                  Text(
-                                    'Special Pizza',
-                                    style: TextStyle(
-                                        fontSize: 17,
-                                        fontWeight: FontWeight.w500,
-                                        color:
-                                            Color.fromARGB(255, 146, 145, 145)),
+                                  SizedBox(
+                                    width: MediaQuery.of(context).size.width*0.27,
+                                    child: const Text(
+                                      'Special Pizza',overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.w500,
+                                          color:
+                                              Color.fromARGB(255, 146, 145, 145)),
+                                    ),
                                   )
                                 ],
                               )
@@ -387,57 +394,58 @@ class _KhanaState extends State<Khana> {
                     height: 80,
                     width: 80,
                   ),
-                  const SizedBox(
-                    width: 20,
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(
-                        height: 7,
-                      ),
-                      const Text(
-                        "Free and Quick Delivery!",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Row(
-                        children: const [
-                          Icon(
-                            Icons.arrow_forward_ios_outlined,
-                            size: 15,
+                  Padding(
+                    padding: const EdgeInsets.only(top:7.0,left: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width *0.5,
+                          child: const Text(
+                            "Free and Quick Delivery!",
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.w600),
                           ),
-                          SizedBox(
-                            width: 5,
-                          ),
-                          Text(
-                            "Within 30 minutes",
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 7,
-                      ),
-                      Row(
-                        children: const [
-                          Icon(
-                            Icons.arrow_forward_ios_outlined,
-                            size: 15,
-                          ),
-                          SizedBox(
-                            width: 5,
-                          ),
-                          Text(
-                            "All over Nepal",
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      ),
-                    ],
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Row(
+                          children: const [
+                            Icon(
+                              Icons.arrow_forward_ios_outlined,
+                              size: 15,
+                            ),
+                            SizedBox(
+                              width: 5,
+                            ),
+                            Text(
+                              "Within 30 minutes",
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 7,
+                        ),
+                        Row(
+                          children: const [
+                            Icon(
+                              Icons.arrow_forward_ios_outlined,
+                              size: 15,
+                            ),
+                            SizedBox(
+                              width: 5,
+                            ),
+                            Text(
+                              "All over Nepal",
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   )
                 ],
               ),

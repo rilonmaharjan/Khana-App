@@ -278,7 +278,7 @@ class _RegisterState extends State<Register> {
                     color: Color.fromARGB(255, 190, 189, 189)),
               ),
               const SizedBox(
-                height: 20,
+                height: 60,
               ),
             ],
           ),

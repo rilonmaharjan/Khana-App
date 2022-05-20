@@ -236,11 +236,11 @@ class _EditState extends State<Edit> {
                                   children: const [
                                     Icon(
                                       Icons.image,
-                                      color: Color.fromARGB(255, 130, 137, 247),
+                                      color: Colors.black,
                                       size: 24,
                                     ),
                                     SizedBox(
-                                      width: 25,
+                                      width: 15,
                                     ),
                                     Text(
                                       "Upload Image from Gallery",
@@ -271,11 +271,11 @@ class _EditState extends State<Edit> {
                                   children: const [
                                     Icon(
                                       Icons.camera_alt,
-                                      color: Color.fromARGB(255, 130, 137, 247),
+                                      color: Colors.black,
                                       size: 24,
                                     ),
                                     SizedBox(
-                                      width: 25,
+                                      width: 15,
                                     ),
                                     Text(
                                       "Upload Image from Camera",

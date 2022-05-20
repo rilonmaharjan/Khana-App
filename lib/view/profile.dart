@@ -208,9 +208,7 @@ class _ProfileState extends State<Profile> {
                       ),
                       Row(
                         children: [
-                          const SizedBox(
-                            width: 10,
-                          ),
+                          const SizedBox(width: 10,),
                           CircleAvatar(
                             radius: 53,
                             backgroundColor:
@@ -232,9 +230,7 @@ class _ProfileState extends State<Profile> {
                                     ),
                             ),
                           ),
-                          const SizedBox(
-                            width: 30,
-                          ),
+                          const SizedBox(width: 25,),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: const [
@@ -269,7 +265,7 @@ class _ProfileState extends State<Profile> {
                                 height: 2,
                               ),
                             ],
-                          )
+                          ),
                         ],
                       ),
                       const SizedBox(
@@ -564,12 +560,15 @@ class _GridState extends State<Grid> {
                 height: 20,
               ),
               const Spacer(),
-              Text(
-                widget.txt,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500),
+              SizedBox(
+                width: MediaQuery.of(context).size.width*0.6,
+                child: Text(
+                  widget.txt,overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500),
+                ),
               ),
               const SizedBox(
                 height: 4,

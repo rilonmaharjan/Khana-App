@@ -1,8 +1,9 @@
+// ignore_for_file: prefer_typing_uninitialized_variables
+
 import 'package:flutter/material.dart';
 import 'package:khana/list/restaurantList.dart';
 import 'package:khana/view/search.dart';
 
-import '../list/foodsList.dart';
 import 'foodsClass.dart';
 import 'order.dart';
 
@@ -96,7 +97,7 @@ class _RestaurantState extends State<Restaurant> {
             delegate: SliverChildBuilderDelegate(
               (context, index) {
                 return SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.899,
+                  height: 770,
                   width: MediaQuery.of(context).size.width,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,49 +200,36 @@ class _RestaurantState extends State<Restaurant> {
                       const SizedBox(
                         height: 6,
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            width: MediaQuery.of(context).size.width * 0.8,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              color: const Color.fromARGB(26, 240, 108, 126),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.star,
-                                  size: 18,
-                                  color: Color.fromARGB(255, 206, 29, 16),
-                                ),
-                                const SizedBox(width: 10),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: const [
-                                    Text(
-                                      "Use code TAPTAP2022 to get Rs.150 off",
-                                      style: TextStyle(
-                                          fontSize: 13,
-                                          color:
-                                              Color.fromARGB(255, 206, 29, 16),
-                                          fontWeight: FontWeight.w500),
-                                    ),
-                                    Text(
-                                      "on orders",
-                                      style: TextStyle(
-                                          fontSize: 13,
-                                          color:
-                                              Color.fromARGB(255, 206, 29, 16),
-                                          fontWeight: FontWeight.w500),
-                                    )
-                                  ],
-                                )
-                              ],
-                            ),
+                      Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          width: MediaQuery.of(context).size.width * 0.8,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            color: const Color.fromARGB(26, 240, 108, 126),
                           ),
-                        ],
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.star,
+                                size: 18,
+                                color: Color.fromARGB(255, 206, 29, 16),
+                              ),
+                              const SizedBox(width: 10),
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.6,
+                                child: const Text(
+                                  "Use code TAPTAP2022 to get Rs.150 off on orders",maxLines: 2,
+                                  style: TextStyle(
+                                      fontSize: 13,
+                                      color:
+                                          Color.fromARGB(255, 206, 29, 16),
+                                      fontWeight: FontWeight.w500),
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
                       ),
                       const SizedBox(
                         height: 6,
