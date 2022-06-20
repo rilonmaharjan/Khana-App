@@ -1,24 +1,32 @@
 // ignore_for_file: use_key_in_widget_constructors, prefer_typing_uninitialized_variables
 
-import 'dart:io';
+import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:khana/list/list.dart';
+import 'package:khana/remote_config.dart';
 import 'package:khana/view/order.dart';
 import 'package:khana/view/sectionview.dart';
 
 import 'bottomnav.dart';
 
 class Khana extends StatefulWidget {
-  const Khana({Key? key}) : super(key: key);
+  final FirebaseRemoteConfig remoteConfigData;
+  const Khana({Key? key, required this.remoteConfigData}) : super(key: key);
 
   @override
   State<Khana> createState() => _KhanaState();
 }
 
 class _KhanaState extends State<Khana> {
+  static RemoteConfigService remoteService = RemoteConfigService();
   var box = GetStorage();
+  var user = FirebaseAuth.instance.currentUser;
   borderdec() {
     return const BoxDecoration(
         color: Colors.white,
@@ -30,6 +38,25 @@ class _KhanaState extends State<Khana> {
               blurRadius: 10)
         ]);
   }
+
+  static FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+  static FirebaseAnalyticsObserver observer =
+      FirebaseAnalyticsObserver(analytics: analytics);
+
+  String get text =>
+      jsonDecode(widget.remoteConfigData.getString('khanaView'))['text'];
+
+  String get image =>
+      jsonDecode(widget.remoteConfigData.getString('khanaView'))['image'];
+
+  int get color => int.parse(
+      jsonDecode(widget.remoteConfigData.getString('khanaView'))['color']);
+
+  int get color2 => int.parse(
+      jsonDecode(widget.remoteConfigData.getString('khanaView'))['color2']);
+
+  double get size =>
+      jsonDecode(widget.remoteConfigData.getString('khanaView'))['size'];
 
   @override
   Widget build(BuildContext context) {
@@ -49,23 +76,25 @@ class _KhanaState extends State<Khana> {
                     padding: const EdgeInsets.only(left: 27),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
                           "Khana Ghar",
                           style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black),
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            color: Color(color),
+                          ),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 4,
                         ),
                         Text(
                           'Check out our food items',
                           style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Color(color),
+                          ),
                         ),
                       ],
                     ),
@@ -75,30 +104,66 @@ class _KhanaState extends State<Khana> {
                     onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const BottomNav(index: 2))),
-                    child: Container(
-                      padding: const EdgeInsets.only(right: 25),
-                      child: CircleAvatar(
-                          radius: 34.5,
-                          backgroundColor:
-                              const Color.fromARGB(255, 130, 137, 247),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(100),
-                            child: box.read("a") != null
-                                ? Image.file(
-                                    File(box.read("a")),
-                                    height: 65,
-                                    width: 65,
-                                    fit: BoxFit.cover,
-                                  )
-                                : Image.asset(
-                                    "assets/icon/l1.png",
-                                    height: 65,
-                                    width: 65,
-                                    fit: BoxFit.cover,
-                                  ),
-                          )),
-                    ),
+                          builder: (context) =>
+                              FutureBuilder<FirebaseRemoteConfig>(
+                                  future: remoteService.setRemoteConfig(),
+                                  builder: (context,
+                                      AsyncSnapshot<FirebaseRemoteConfig>
+                                          snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return const Scaffold(
+                                        body: CircularProgressIndicator(),
+                                      );
+                                    }
+                                    if (snapshot.hasData) {
+                                      return BottomNav(
+                                        remoteConfigData: snapshot.requireData,
+                                        index: 4,
+                                      );
+                                    }
+                                    return const Text("No text");
+                                  }),
+                        )),
+                    child: StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection("users")
+                            .where('email', isEqualTo: user!.email)
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return const Text(
+                              'No User Data...',
+                            );
+                          } else {
+                            List<QueryDocumentSnapshot<Object?>>
+                                firestoreItems = snapshot.data!.docs;
+                            return Container(
+                              padding: const EdgeInsets.only(right: 25),
+                              child: CircleAvatar(
+                                  radius: 34.5,
+                                  backgroundColor:
+                                      const Color.fromARGB(255, 255, 255, 255),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(100),
+                                    child: firestoreItems[0]['photo'] != ""
+                                        ? CachedNetworkImage(
+                                            imageUrl: firestoreItems[0]
+                                                ['photo'],
+                                            height: 65,
+                                            width: 65,
+                                            fit: BoxFit.cover,
+                                          )
+                                        : Image.asset(
+                                            "assets/icon/l2.png",
+                                            height: 75,
+                                            width: 75,
+                                            fit: BoxFit.cover,
+                                          ),
+                                  )),
+                            );
+                          }
+                        }),
                   ),
                 ],
               ),
@@ -129,20 +194,21 @@ class _KhanaState extends State<Khana> {
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(
+                            children: [
+                              const Icon(
                                 Icons.food_bank,
                                 size: 32,
                                 color: Colors.orange,
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 width: 4,
                               ),
-                              Text(
-                                'Authentics',
-                                style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.w600),
-                              ),
+                              Text('Authentics',
+                                  style: TextStyle(
+                                    color: Color(color),
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  )),
                             ],
                           ),
                           const SizedBox(
@@ -186,10 +252,10 @@ class _KhanaState extends State<Khana> {
                             context,
                             MaterialPageRoute(
                                 builder: ((context) =>
-                                    const Sections(title: "Achaar")))),
+                                    const Sections(title: "Achar")))),
                         child: Container(
                           padding: const EdgeInsets.only(
-                              top: 24, left: 12, right: 5),
+                              top: 24, left: 12, right: 12),
                           height: 112,
                           width: MediaQuery.of(context).size.width / 2.31,
                           decoration: borderdec(),
@@ -197,21 +263,22 @@ class _KhanaState extends State<Khana> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                children: const [
-                                  SizedBox(
+                                children: [
+                                  const SizedBox(
                                     width: 3,
                                   ),
-                                  Icon(
+                                  const Icon(
                                     Icons.restaurant,
                                     size: 23,
                                     color: Colors.blue,
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                     width: 7,
                                   ),
                                   Text(
-                                    'Achaar',
+                                    'Achar',
                                     style: TextStyle(
+                                        color: Color(color),
                                         fontSize: 18,
                                         fontWeight: FontWeight.w600),
                                   ),
@@ -221,7 +288,7 @@ class _KhanaState extends State<Khana> {
                                 height: 17,
                               ),
                               Row(
-                                children:  [
+                                children: [
                                   const SizedBox(
                                     width: 7,
                                   ),
@@ -234,15 +301,17 @@ class _KhanaState extends State<Khana> {
                                     width: 8,
                                   ),
                                   SizedBox(
-                                    width: MediaQuery.of(context).size.width*0.3,
-                                    child: const Text(
-                                      'Special Achar', overflow: TextOverflow.ellipsis,
-                                      
-                                      style: TextStyle(
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.w500,
-                                          color:
-                                              Color.fromARGB(255, 146, 145, 145)),
+                                    width:
+                                        MediaQuery.of(context).size.width -285,
+                                    child: const FittedBox(
+                                      child: Text(
+                                        'Special Achar',
+                                        style: TextStyle(
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.w500,
+                                            color: Color.fromARGB(
+                                                255, 146, 145, 145)),
+                                      ),
                                     ),
                                   )
                                 ],
@@ -261,7 +330,7 @@ class _KhanaState extends State<Khana> {
                                     const Sections(title: "Our Pizza")))),
                         child: Container(
                           padding: const EdgeInsets.only(
-                              top: 23, left: 12, right: 5),
+                              top: 23, left: 12, right: 12),
                           margin: const EdgeInsets.only(top: 16),
                           height: 112,
                           width: MediaQuery.of(context).size.width / 2.31,
@@ -270,21 +339,22 @@ class _KhanaState extends State<Khana> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                children: const [
-                                  SizedBox(
+                                children: [
+                                  const SizedBox(
                                     width: 3,
                                   ),
-                                  Icon(
+                                  const Icon(
                                     Icons.local_pizza,
                                     size: 26,
                                     color: Color.fromARGB(255, 255, 230, 0),
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                     width: 5,
                                   ),
                                   Text(
                                     'Our Pizza',
                                     style: TextStyle(
+                                        color: Color(color),
                                         fontSize: 18,
                                         fontWeight: FontWeight.w600),
                                   ),
@@ -294,7 +364,7 @@ class _KhanaState extends State<Khana> {
                                 height: 14,
                               ),
                               Row(
-                                children:  [
+                                children: [
                                   const SizedBox(
                                     width: 5,
                                   ),
@@ -307,14 +377,17 @@ class _KhanaState extends State<Khana> {
                                     width: 8,
                                   ),
                                   SizedBox(
-                                    width: MediaQuery.of(context).size.width*0.27,
-                                    child: const Text(
-                                      'Special Pizza',overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.w500,
-                                          color:
-                                              Color.fromARGB(255, 146, 145, 145)),
+                                    width: MediaQuery.of(context).size.width -290,
+                                    child: const FittedBox(
+                                      child: Text(
+                                        'Special Pizza',
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.w500,
+                                            color: Color.fromARGB(
+                                                255, 146, 145, 145)),
+                                      ),
                                     ),
                                   )
                                 ],
@@ -340,116 +413,249 @@ class _KhanaState extends State<Khana> {
                   padding: const EdgeInsets.only(left: 20, bottom: 15),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
                         'Explore our food items',
                         style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black),
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: Color(color),
+                        ),
                       ),
                     ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.only(left: 15),
-                  height: 165,
-                  child: ListView.builder(
-                      shrinkWrap: true,
-                      scrollDirection: Axis.horizontal,
-                      itemCount: data.length,
-                      itemBuilder: (context, index) {
-                        return CardTile(
-                          img: data[index]["url"],
-                          txt: data[index]["name"],
-                          txt1: data[index]["text"],
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: ((context) => Order(
-                                          desc: data[index]["rs"].toString(),
-                                          title: data[index]["name"].toString(),
-                                          url: data[index]["url"].toString(),
-                                        ))));
-                          },
+                StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection("explore")
+                        .orderBy("title", descending: true)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const Text(
+                          'No User Data...',
                         );
-                      }),
-                ),
+                      } else {
+                        List<QueryDocumentSnapshot<Object?>> firestoreExplore =
+                            snapshot.data!.docs;
+                        return Container(
+                          padding: const EdgeInsets.only(left: 15),
+                          height: 165,
+                          child: ListView.builder(
+                              shrinkWrap: true,
+                              scrollDirection: Axis.horizontal,
+                              itemCount: firestoreExplore.length,
+                              itemBuilder: (context, index) {
+                                return CardTile(
+                                  img: firestoreExplore[index]["image"],
+                                  txt: firestoreExplore[index]["title"]
+                                      .toString(),
+                                  txt1: firestoreExplore[index]["desc"]
+                                      .toString(),
+                                  onTap: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: ((context) => Order(
+                                                  desc: firestoreExplore[index]
+                                                          ["price"]
+                                                      .toString(),
+                                                  title: firestoreExplore[index]
+                                                          ["title"]
+                                                      .toString(),
+                                                  url: firestoreExplore[index]
+                                                          ["image"]
+                                                      .toString(),
+                                                  analytics: analytics,
+                                                  observer: observer,
+                                                ))));
+                                  },
+                                );
+                              }),
+                        );
+                      }
+                    })
               ],
             ),
 
             //Body3
-            Container(
-              padding: const EdgeInsets.all(20),
-              margin: const EdgeInsets.only(
-                  top: 25, right: 16, left: 16, bottom: 10),
-              decoration: borderdec(),
-              height: 128,
-              width: MediaQuery.of(context).size.width,
-              child: Row(
-                children: [
-                  Image.asset(
-                    "images/img-2.png",
-                    height: 80,
-                    width: 80,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top:7.0,left: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width *0.5,
-                          child: const Text(
-                            "Free and Quick Delivery!",
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Row(
-                          children: const [
-                            Icon(
-                              Icons.arrow_forward_ios_outlined,
-                              size: 15,
+            Center(
+                child: widget.remoteConfigData.getBool('khanaContainer')
+                    ? Container(
+                        padding: const EdgeInsets.all(20),
+                        margin: const EdgeInsets.only(
+                            top: 25, right: 16, left: 16, bottom: 10),
+                        decoration: borderdec(),
+                        height: 128,
+                        width: MediaQuery.of(context).size.width,
+                        child: Row(
+                          children: [
+                            Image.asset(
+                              image,
+                              height: 80,
+                              width: 80,
                             ),
-                            SizedBox(
-                              width: 5,
-                            ),
-                            Text(
-                              "Within 30 minutes",
-                              style: TextStyle(fontWeight: FontWeight.w600),
-                            ),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(top: 7.0, left: 20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.5,
+                                    child: FittedBox(
+                                      child: Text(
+                                        text,
+                                        maxLines: 3,
+                                        style: TextStyle(
+                                            color: Color(color),
+                                            fontSize: size,
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.arrow_forward_ios_outlined,
+                                        size: 15,
+                                        color: Color(color2),
+                                      ),
+                                      const SizedBox(
+                                        width: 5,
+                                      ),
+                                      Text(
+                                        "Within 30 minutes",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(color2),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 7,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.arrow_forward_ios_outlined,
+                                        size: 15,
+                                        color: Color(color2),
+                                      ),
+                                      const SizedBox(
+                                        width: 5,
+                                      ),
+                                      Text(
+                                        "All over Nepal",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(color2),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            )
                           ],
                         ),
-                        const SizedBox(
-                          height: 7,
-                        ),
-                        Row(
-                          children: const [
-                            Icon(
-                              Icons.arrow_forward_ios_outlined,
-                              size: 15,
+                      )
+                    : Container(
+                        padding: const EdgeInsets.all(20),
+                        margin: const EdgeInsets.only(
+                            top: 25, right: 16, left: 16, bottom: 10),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(7),
+                            color: Colors.white,
+                            border: const Border(
+                              top: BorderSide(
+                                  width: 0.5,
+                                  color: Color.fromARGB(255, 211, 210, 210)),
+                              left: BorderSide(
+                                  width: 0.5,
+                                  color: Color.fromARGB(255, 211, 210, 210)),
+                              right: BorderSide(
+                                  width: 0.5,
+                                  color: Color.fromARGB(255, 211, 210, 210)),
+                              bottom: BorderSide(
+                                  width: 0.5,
+                                  color: Color.fromARGB(255, 211, 210, 210)),
+                            )),
+                        height: 128,
+                        width: MediaQuery.of(context).size.width,
+                        child: Row(
+                          children: [
+                            Image.asset(
+                              image,
+                              height: 80,
+                              width: 80,
                             ),
-                            SizedBox(
-                              width: 5,
-                            ),
-                            Text(
-                              "All over Nepal",
-                              style: TextStyle(fontWeight: FontWeight.w600),
-                            ),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(top: 7.0, left: 20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.5,
+                                    child: Text(
+                                      text,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          fontSize: size,
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  Row(
+                                    children: const [
+                                      Icon(
+                                        Icons.arrow_forward_ios_outlined,
+                                        size: 15,
+                                      ),
+                                      SizedBox(
+                                        width: 5,
+                                      ),
+                                      Text(
+                                        "Within 30 minutes",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 7,
+                                  ),
+                                  Row(
+                                    children: const [
+                                      Icon(
+                                        Icons.arrow_forward_ios_outlined,
+                                        size: 15,
+                                      ),
+                                      SizedBox(
+                                        width: 5,
+                                      ),
+                                      Text(
+                                        "All over Nepal",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            )
                           ],
                         ),
-                      ],
-                    ),
-                  )
-                ],
-              ),
-            ),
+                      )),
           ],
         ),
       ),
@@ -476,8 +682,10 @@ class _CardTileState extends State<CardTile> {
         children: [
           ClipRRect(
               borderRadius: BorderRadius.circular(17),
-              child: Image.asset(
-                widget.img,
+              child: CachedNetworkImage(
+                fadeInDuration: const Duration(milliseconds: 0),
+                fadeOutDuration: const Duration(milliseconds: 0),
+                imageUrl: widget.img,
                 height: 165,
                 width: 270,
                 fit: BoxFit.cover,

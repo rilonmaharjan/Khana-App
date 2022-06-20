@@ -1,11 +1,20 @@
+import 'dart:convert';
+
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
+import 'package:khana/remote_config.dart';
 import 'package:khana/view/foods.dart';
 import 'package:khana/view/khana.dart';
 import 'package:khana/view/profile.dart';
+import 'package:khana/view/search.dart';
+
+import 'cart.dart';
 
 class BottomNav extends StatefulWidget {
-
-  const BottomNav({ Key? key ,required this.index}) : super(key: key);
+  final FirebaseRemoteConfig remoteConfigData;
+  const BottomNav(
+      {Key? key, required this.index, required this.remoteConfigData})
+      : super(key: key);
   final int index;
 
   @override
@@ -13,40 +22,80 @@ class BottomNav extends StatefulWidget {
 }
 
 class _BottomNavState extends State<BottomNav> {
-
-
   int _selectedIndex = 0;
+  static RemoteConfigService remoteService = RemoteConfigService();
   List pages = [
-    const Khana(),
-    const Food(),
+    FutureBuilder<FirebaseRemoteConfig>(
+        future: remoteService.setRemoteConfig(),
+        builder: (context, AsyncSnapshot<FirebaseRemoteConfig> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: CircularProgressIndicator(),
+            );
+          }
+          if (snapshot.hasData) {
+            return Khana(remoteConfigData: snapshot.requireData);
+          }
+          return const Text("No text");
+        }),
+    const SearchView(),
+    FutureBuilder<FirebaseRemoteConfig>(
+        future: remoteService.setRemoteConfig(),
+        builder: (context, AsyncSnapshot<FirebaseRemoteConfig> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: CircularProgressIndicator(),
+            );
+          }
+          if (snapshot.hasData) {
+            return Food(remoteConfigData: snapshot.requireData);
+          }
+          return const Text("No text");
+        }),
+    FutureBuilder<FirebaseRemoteConfig>(
+        future: remoteService.setRemoteConfig(),
+        builder: (context, AsyncSnapshot<FirebaseRemoteConfig> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: CircularProgressIndicator(),
+            );
+          }
+          if (snapshot.hasData) {
+            return Cart(remoteConfigData: snapshot.requireData);
+          }
+          return const Text("No text");
+        }),
     const Profile(),
   ];
-  
+
   @override
   void initState() {
     _selectedIndex = widget.index;
     super.initState();
   }
 
-  _handleTap(index){
+  _handleTap(index) {
     setState(() {
       _selectedIndex = index;
     });
   }
+
+  int get navcolor => int.parse(jsonDecode(
+      widget.remoteConfigData.getString('khanaView'))['bottomNavColor']);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       body: pages[_selectedIndex],
       //BottomNavigation Bar
-      bottomNavigationBar: BottomNavigationBar( 
-
+      bottomNavigationBar: BottomNavigationBar(
         onTap: _handleTap,
         currentIndex: _selectedIndex,
-        unselectedItemColor: Colors.black,
-        selectedItemColor: const Color.fromARGB(255, 130, 137, 247),
-        iconSize: 29,
-        unselectedFontSize: 14,
+        unselectedItemColor: const Color.fromARGB(255, 90, 90, 90),
+        selectedItemColor: Color(navcolor),
+        // 8289F7
+        iconSize: 26,
+        unselectedFontSize: 13,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
               icon: Icon(
@@ -55,9 +104,20 @@ class _BottomNavState extends State<BottomNav> {
               label: 'Home'),
           BottomNavigationBarItem(
               icon: Icon(
-                Icons.cookie_outlined,
+                Icons.search_outlined,
               ),
-              label: 'Foods',),
+              label: 'Search'),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.cookie_outlined,
+            ),
+            label: 'Foods',
+          ),
+          BottomNavigationBarItem(
+              icon: Icon(
+                Icons.shopping_cart_outlined,
+              ),
+              label: 'Basket'),
           BottomNavigationBarItem(
               icon: Icon(
                 Icons.person_outline,
@@ -65,7 +125,6 @@ class _BottomNavState extends State<BottomNav> {
               label: 'Profile'),
         ],
       ),
-      
     );
   }
 }

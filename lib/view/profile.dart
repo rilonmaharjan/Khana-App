@@ -1,15 +1,15 @@
 // ignore_for_file: prefer_typing_uninitialized_variables
 
-import 'dart:io';
-
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:khana/list/list.dart';
+import 'package:khana/provider/google_sign_in.dart';
 import 'package:khana/view/edit.dart';
-import 'package:khana/view/login.dart';
 import 'package:khana/view/settings.dart';
-
-import 'order.dart';
+import 'package:provider/provider.dart';
 
 // import 'package:khana/view/khana.dart';
 
@@ -27,6 +27,7 @@ class _ProfileState extends State<Profile> {
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -98,59 +99,15 @@ class _ProfileState extends State<Profile> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const Settings()));
+                                  builder: (context) => const SettingPage()));
                           break;
 
                         case popupBtn.logout:
-                          showDialog<String>(
-                              context: context,
-                              builder: (BuildContext context) => AlertDialog(
-                                    title: const Text(
-                                      'Do you want to Log Out?',
-                                      style: TextStyle(
-                                        fontSize: 16.5,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    content: const Text(
-                                      'This will log you out.',
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ),
-                                    actions: <Widget>[
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(context, 'Cancel'),
-                                        child: const Text(
-                                          'Cancel',
-                                          style: TextStyle(
-                                              fontSize: 15.5,
-                                              fontWeight: FontWeight.w500,
-                                              color: Color.fromARGB(
-                                                  255, 130, 137, 247)),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      const Login()));
-                                        },
-                                        child: const Text(
-                                          'OK',
-                                          style: TextStyle(
-                                              fontSize: 15.5,
-                                              fontWeight: FontWeight.w500,
-                                              color: Color.fromARGB(
-                                                  255, 130, 137, 247)),
-                                        ),
-                                      ),
-                                    ],
-                                  ));
+                          final provider = Provider.of<GoogleSignInProvider>(
+                              context,
+                              listen: false);
+                          provider.googleLogout();
+                          FirebaseAuth.instance.signOut();
                           break;
                         default:
                       }
@@ -169,150 +126,233 @@ class _ProfileState extends State<Profile> {
                 fit: BoxFit.cover,
               ),
             ),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(20),
+              child: Container(
+                  padding: const EdgeInsets.only(top: 10),
+                  height: 30,
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(40),
+                          topRight: Radius.circular(40))),
+                  child: const Center(
+                    child: Icon(
+                      Icons.drag_handle,
+                      color: Color.fromARGB(255, 173, 173, 173),
+                    ),
+                  )),
+            ),
           ),
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
                 return Container(
-                  height: 687.0,
+                  height: 680.0,
                   width: MediaQuery.of(context).size.width,
-                  margin: const EdgeInsets.all(10),
                   padding: const EdgeInsets.only(
-                    top: 5,
+                    top: 30,
                     left: 22,
                     right: 22,
                   ),
-                  decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.all(Radius.circular(30)),
-                      boxShadow: [
-                        BoxShadow(
-                            color: Color.fromARGB(255, 212, 210, 210),
-                            offset: Offset(5, 5),
-                            blurRadius: 20)
-                      ]),
+                  color: Colors.white,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(
-                            Icons.drag_handle,
-                            color: Color.fromARGB(255, 173, 173, 173),
-                          )
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 30,
-                      ),
-                      Row(
-                        children: [
-                          const SizedBox(width: 10,),
-                          CircleAvatar(
-                            radius: 53,
-                            backgroundColor:
-                                const Color.fromARGB(255, 130, 137, 247),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(100),
-                              child: box.read("a") != null
-                                  ? Image.file(
-                                      File(box.read("a")),
-                                      height: 104,
-                                      width: 104,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : Image.asset(
-                                      "assets/icon/l1.png",
-                                      height: 95,
-                                      width: 95,
-                                      fit: BoxFit.cover,
+                      StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection("users")
+                              .where('email', isEqualTo: user!.email)
+                              .snapshots(),
+                          builder: (context, snapshot) {
+                            if (!snapshot.hasData) {
+                              return const Text(
+                                'No User Data...',
+                              );
+                            } else {
+                              List<QueryDocumentSnapshot<Object?>>
+                                  firestoreItems = snapshot.data!.docs;
+                              return Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      const SizedBox(
+                                        width: 5,
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          showDialog<String>(
+                                            context: context,
+                                            builder: (BuildContext context) =>
+                                                GestureDetector(
+                                              onTap: () {
+                                                Navigator.pop(context);
+                                              },
+                                              child: InteractiveViewer(
+                                                child: AlertDialog(
+                                                  titlePadding:
+                                                      const EdgeInsets.all(0),
+                                                  title: firestoreItems[index]
+                                                              ['photo'] !=
+                                                          ""
+                                                      ? CachedNetworkImage(
+                                                          imageUrl:
+                                                              firestoreItems[
+                                                                      index]
+                                                                  ['photo'],
+                                                          fit: BoxFit.cover,
+                                                        )
+                                                      //NetworkImage(user.photoURL!),
+                                                      : Image.asset(
+                                                          "assets/icon/l2.png",
+                                                          fit: BoxFit.cover,
+                                                        ),
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        child: CircleAvatar(
+                                          radius: 53,
+                                          backgroundColor: const Color.fromARGB(
+                                              255, 255, 255, 255),
+                                          child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(100),
+                                            child: firestoreItems[index]
+                                                        ['photo'] !=
+                                                    ""
+                                                ? CachedNetworkImage(
+                                                    imageUrl:
+                                                        firestoreItems[index]
+                                                            ['photo'],
+                                                    height: 104,
+                                                    width: 104,
+                                                    fit: BoxFit.cover,
+                                                  )
+                                                //NetworkImage(user.photoURL!),
+                                                : Image.asset(
+                                                    "assets/icon/l2.png",
+                                                    height: 105,
+                                                    width: 105,
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 22,
+                                      ),
+                                      SizedBox(
+                                        width: MediaQuery.of(context).size.width/1.9,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            FittedBox(
+                                              child: Text(
+                                                firestoreItems[index]['name'],
+                                                style: const TextStyle(
+                                                    fontSize: 17,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Color.fromARGB(
+                                                        255, 68, 67, 67)),
+                                              ),
+                                            ),
+                                            const SizedBox(
+                                              height: 9,
+                                            ),
+                                           FittedBox(
+                                             child: Text(
+                                                  firestoreItems[index]['email'],
+                                                  style: const TextStyle(
+                                                      fontSize: 14,
+                                                      fontWeight: FontWeight.w400,
+                                                      color: Color.fromARGB(
+                                                          255, 95, 95, 95)),
+                                                
+                                                
+                                              ),
+                                           ),
+                                            const SizedBox(
+                                              height: 9,
+                                            ),
+                                            Text(
+                                              firestoreItems[index]
+                                                  ['phoneNumber'],
+                                              style: const TextStyle(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w400,
+                                                  color: Color.fromARGB(
+                                                      255, 100, 100, 100)),
+                                            ),
+                                            const SizedBox(
+                                              height: 2,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  Center(
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) => Edit(
+                                                      editname:
+                                                          firestoreItems[index]
+                                                              ['name'],
+                                                      editphone:
+                                                          firestoreItems[index]
+                                                              ['phoneNumber'],
+                                                    )));
+                                      },
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: const [
+                                          Icon(
+                                            Icons.edit,
+                                            size: 17,
+                                          ),
+                                          SizedBox(
+                                            width: 8,
+                                          ),
+                                          Text(
+                                            "Edit Profile",
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w500),
+                                          ),
+                                        ],
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                          fixedSize: const Size(150, 40),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(30),
+                                          ),
+                                          textStyle: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w700),
+                                          primary: const Color.fromARGB(
+                                              255, 253, 253, 253),
+                                          onPrimary: const Color.fromARGB(
+                                              255, 0, 0, 0)),
                                     ),
-                            ),
-                          ),
-                          const SizedBox(width: 25,),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text(
-                                "Anik Shakya",
-                                style: TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color.fromARGB(255, 68, 67, 67)),
-                              ),
-                              SizedBox(
-                                height: 9,
-                              ),
-                              Text(
-                                "aniklinkin@gmail.com",
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w400,
-                                    color: Color.fromARGB(255, 95, 95, 95)),
-                              ),
-                              SizedBox(
-                                height: 9,
-                              ),
-                              Text(
-                                "9861333456",
-                                style: TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w400,
-                                    color: Color.fromARGB(255, 100, 100, 100)),
-                              ),
-                              SizedBox(
-                                height: 2,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                                  ),
+                                ],
+                              );
+                            }
+                          }),
                       const SizedBox(
                         height: 15,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => const Edit()));
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
-                                Icon(
-                                  Icons.edit,
-                                  size: 17,
-                                ),
-                                SizedBox(
-                                  width: 8,
-                                ),
-                                Text(
-                                  "Edit Profile",
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500),
-                                ),
-                              ],
-                            ),
-                            style: ElevatedButton.styleFrom(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                                textStyle: const TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.w700),
-                                primary:
-                                    const Color.fromARGB(255, 253, 253, 253),
-                                onPrimary: const Color.fromARGB(255, 0, 0, 0)),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 10,
                       ),
                       const Divider(
                         indent: 0,
@@ -320,7 +360,7 @@ class _ProfileState extends State<Profile> {
                         thickness: 1,
                       ),
                       const SizedBox(
-                        height: 10,
+                        height: 15,
                       ),
                       Row(
                         children: const [
@@ -330,7 +370,7 @@ class _ProfileState extends State<Profile> {
                                 fontSize: 18, fontWeight: FontWeight.w600),
                           ),
                           SizedBox(
-                            width: 5,
+                            width: 10,
                           ),
                           Icon(
                             Icons.favorite,
@@ -344,6 +384,7 @@ class _ProfileState extends State<Profile> {
                       ),
                       Expanded(
                         child: GridView.count(
+                          physics: const NeverScrollableScrollPhysics(),
                           primary: false,
                           padding: const EdgeInsets.only(top: 10, bottom: 0),
                           crossAxisSpacing: 20,
@@ -354,153 +395,46 @@ class _ProfileState extends State<Profile> {
                               img: data2[0]["url"],
                               txt: data2[0]["name"],
                               txt1: data2[0]["text"],
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: ((context) => Order(
-                                              url: data2[0]["url"].toString(),
-                                              desc:
-                                                  data2[0]["rs"].toString(),
-                                              title: list[0]["name"].toString(),
-                                            ))));
-                              },
                             ),
                             Grid(
                               img: data2[1]["url"],
                               txt: data2[1]["name"],
                               txt1: data2[1]["text"],
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: ((context) => Order(
-                                              url: data2[1]["url"].toString(),
-                                              desc:
-                                                  data2[1]["rs"].toString(),
-                                              title:
-                                                  data2[1]["name"].toString(),
-                                            ))));
-                              },
                             ),
                             Grid(
                               img: data2[3]["url"],
                               txt: data2[3]["name"],
                               txt1: data2[3]["text"],
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: ((context) => Order(
-                                              url: data2[3]["url"].toString(),
-                                              desc:
-                                                  data2[3]["rs"].toString(),
-                                              title:
-                                                  data2[3]["name"].toString(),
-                                            ))));
-                              },
                             ),
                             Grid(
                               img: data2[4]["url"],
                               txt: data2[4]["name"],
                               txt1: data2[4]["text"],
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: ((context) => Order(
-                                              url: data2[4]["url"].toString(),
-                                              desc:
-                                                  data2[4]["rs"].toString(),
-                                              title:
-                                                  data2[4]["name"].toString(),
-                                            ))));
-                              },
                             ),
                             Grid(
                               img: data2[5]["url"],
                               txt: data2[5]["name"],
                               txt1: data2[5]["text"],
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: ((context) => Order(
-                                              url: data2[5]["url"].toString(),
-                                              desc:
-                                                  data2[5]["rs"].toString(),
-                                              title:
-                                                  data2[5]["name"].toString(),
-                                            ))));
-                              },
                             ),
                             Grid(
                               img: data2[6]["url"],
                               txt: data2[6]["name"],
                               txt1: data2[6]["text"],
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: ((context) => Order(
-                                              url: data2[6]["url"].toString(),
-                                              desc:
-                                                  data2[6]["rs"].toString(),
-                                              title:
-                                                  data2[6]["name"].toString(),
-                                            ))));
-                              },
                             ),
                             Grid(
                               img: data2[7]["url"],
                               txt: data2[7]["name"],
                               txt1: data2[7]["text"],
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: ((context) => Order(
-                                              url: data2[7]["url"].toString(),
-                                              desc:
-                                                  data2[7]["rs"].toString(),
-                                              title:
-                                                  data2[7]["name"].toString(),
-                                            ))));
-                              },
                             ),
                             Grid(
                               img: data2[8]["url"],
                               txt: data2[8]["name"],
                               txt1: data2[8]["text"],
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: ((context) => Order(
-                                              url: data2[8]["url"].toString(),
-                                              desc:
-                                                  data2[8]["rs"].toString(),
-                                              title:
-                                                  data2[8]["name"].toString(),
-                                            ))));
-                              },
                             ),
                             Grid(
                               img: data2[9]["url"],
                               txt: data2[9]["name"],
                               txt1: data2[9]["text"],
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: ((context) => Order(
-                                              url: data2[9]["url"].toString(),
-                                              desc:
-                                                  data2[9]["rs"].toString(),
-                                              title:
-                                                  data2[9]["name"].toString(),
-                                            ))));
-                              },
                             ),
                           ],
                         ),
@@ -523,9 +457,7 @@ class _ProfileState extends State<Profile> {
 
 class Grid extends StatefulWidget {
   final img, txt, txt1;
-  final VoidCallback onTap;
-  const Grid({Key? key, this.img, this.txt, this.txt1, required this.onTap})
-      : super(key: key);
+  const Grid({Key? key, this.img, this.txt, this.txt1}) : super(key: key);
 
   @override
   State<Grid> createState() => _GridState();
@@ -534,59 +466,57 @@ class Grid extends StatefulWidget {
 class _GridState extends State<Grid> {
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: widget.onTap,
-      child: Stack(children: [
-        ClipRRect(
-            borderRadius: BorderRadius.circular(17),
-            child: Image.asset(
-              widget.img,
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height,
-              fit: BoxFit.cover,
-            )),
-        Container(
-          decoration: const BoxDecoration(
-            color: Color.fromARGB(103, 0, 0, 0),
-            borderRadius: BorderRadius.all(Radius.circular(17)),
-          ),
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(
-                height: 20,
-              ),
-              const Spacer(),
-              SizedBox(
-                width: MediaQuery.of(context).size.width*0.6,
-                child: Text(
-                  widget.txt,overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500),
-                ),
-              ),
-              const SizedBox(
-                height: 4,
-              ),
-              Text(
-                widget.txt1,
+    return Stack(children: [
+      ClipRRect(
+          borderRadius: BorderRadius.circular(17),
+          child: Image.asset(
+            widget.img,
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
+            fit: BoxFit.cover,
+          )),
+      Container(
+        decoration: const BoxDecoration(
+          color: Color.fromARGB(103, 0, 0, 0),
+          borderRadius: BorderRadius.all(Radius.circular(17)),
+        ),
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(
+              height: 20,
+            ),
+            const Spacer(),
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.6,
+              child: Text(
+                widget.txt,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 11,
+                    fontSize: 15,
                     fontWeight: FontWeight.w500),
               ),
-              const SizedBox(
-                height: 4,
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(
+              height: 4,
+            ),
+            Text(
+              widget.txt1,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(
+              height: 4,
+            ),
+          ],
         ),
-      ]),
-    );
+      ),
+    ]);
   }
 }

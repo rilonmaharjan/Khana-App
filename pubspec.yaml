@@ -45,12 +45,53 @@ dependencies:
   path_provider: ^2.0.10
   get_storage: ^2.0.3
 
+  #google sign in
+  google_sign_in: ^5.3.2
+
   #firebase
   firebase_core: ^1.17.0
-  firebase_analytics: ^9.1.8
+  firebase_analytics: ^9.1.9
   firebase_storage: ^10.2.16
   cloud_firestore: ^3.1.15
   firebase_auth: ^3.3.18
+
+  #email validate
+  email_validator: ^2.0.1
+
+  #state management
+  provider: ^6.0.3
+
+  #cchedimage
+  cached_network_image: ^3.2.0
+
+  #location
+  geolocator: ^8.2.1
+  geocoding: ^2.0.4
+
+  #font awesom icon
+  font_awesome_flutter: ^10.1.0
+
+  #link to web
+  url_launcher: ^6.1.2
+
+  #firebase notification
+  firebase_messaging: ^11.4.1
+  flutter_local_notifications: ^9.5.3+1
+
+  #getx for multi language and ...blabla
+  get: ^4.6.5
+
+  #permssion access
+  permission_handler: ^9.2.0
+
+  #remote config firebase
+  firebase_remote_config: ^2.0.8
+
+  
+
+
+
+
   
 
 dev_dependencies:

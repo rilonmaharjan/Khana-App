@@ -1,11 +1,22 @@
 //ignore_for_file: prefer_typing_uninitialized_variables
 
+import 'dart:convert';
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 
 class Resturaunt extends StatefulWidget {
+  final FirebaseRemoteConfig remoteConfigData;
   final img, text;
   final VoidCallback onTap;
-  const Resturaunt({Key? key, this.img, this.text, required this.onTap})
+
+  const Resturaunt(
+      {Key? key,
+      this.img,
+      this.text,
+      required this.onTap,
+      required this.remoteConfigData})
       : super(key: key);
 
   @override
@@ -20,16 +31,19 @@ class _ResturauntState extends State<Resturaunt> {
       child: Column(
         children: [
           GestureDetector(
-            onTap: widget.onTap,
-            child: ClipRRect(
-                borderRadius: BorderRadius.circular(100),
-                child: Image.asset(
-                  widget.img,
-                  height: 65,
-                  width: 65,
-                  fit: BoxFit.cover,
-                )),
-          ),
+              onTap: widget.onTap,
+              child: ClipRRect(
+                  borderRadius: BorderRadius.circular(
+                    (jsonDecode(widget.remoteConfigData.getString('foodView'))[
+                        'radius']),
+                  ),
+                  child: CachedNetworkImage(
+                    fadeInDuration: const Duration(milliseconds: 0),
+                    imageUrl: widget.img,
+                    height: 65,
+                    width: 65,
+                    fit: BoxFit.cover,
+                  ))),
           const SizedBox(
             height: 10,
           ),
@@ -37,7 +51,7 @@ class _ResturauntState extends State<Resturaunt> {
             widget.text,
             style: const TextStyle(
                 color: Color.fromARGB(255, 70, 69, 69),
-                fontSize: 12,
+                fontSize: 10,
                 fontWeight: FontWeight.w400),
           ),
         ],
@@ -90,8 +104,10 @@ class _OfferState extends State<Offer> {
             ClipRRect(
                 borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(6), topRight: Radius.circular(6)),
-                child: Image.asset(
-                  widget.img,
+                child: CachedNetworkImage(
+                  fadeInDuration: const Duration(milliseconds: 0),
+                  fadeOutDuration: const Duration(milliseconds: 0),
+                  imageUrl: widget.img,
                   height: 160,
                   width: 260,
                   fit: BoxFit.cover,
@@ -138,6 +154,16 @@ class _OfferState extends State<Offer> {
                 const SizedBox(
                   width: 15,
                 ),
+                const Text(
+                  "Rs.",
+                  style: TextStyle(
+                      color: Color.fromARGB(255, 102, 101, 101),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400),
+                ),
+                const SizedBox(
+                  width: 4,
+                ),
                 Text(
                   widget.text2,
                   style: const TextStyle(
@@ -169,14 +195,14 @@ class _OfferState extends State<Offer> {
 class Offer2 extends StatefulWidget {
   final img, text, text2, text3;
   final VoidCallback onTap;
-  const Offer2(
-      {Key? key,
-      this.img,
-      this.text,
-      this.text2,
-      required this.onTap,
-      this.text3})
-      : super(key: key);
+  const Offer2({
+    Key? key,
+    this.img,
+    this.text,
+    this.text2,
+    required this.onTap,
+    this.text3,
+  }) : super(key: key);
 
   @override
   State<Offer2> createState() => _Offer2State();
@@ -214,8 +240,10 @@ class _Offer2State extends State<Offer2> {
                     borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(6),
                         topRight: Radius.circular(6)),
-                    child: Image.asset(
-                      widget.img,
+                    child: CachedNetworkImage(
+                      fadeInDuration: const Duration(milliseconds: 0),
+                      fadeOutDuration: const Duration(milliseconds: 0),
+                      imageUrl: widget.img,
                       height: 160,
                       width: 260,
                       fit: BoxFit.cover,
@@ -240,6 +268,16 @@ class _Offer2State extends State<Offer2> {
                   children: [
                     const SizedBox(
                       width: 15,
+                    ),
+                    const Text(
+                      "Rs.",
+                      style: TextStyle(
+                          color: Color.fromARGB(255, 102, 101, 101),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400),
+                    ),
+                    const SizedBox(
+                      width: 4,
                     ),
                     Text(
                       widget.text2,

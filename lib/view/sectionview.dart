@@ -1,7 +1,9 @@
 // ignore_for_file: prefer_typing_uninitialized_variables
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
-import 'package:khana/list/section.dart';
 
 import 'order.dart';
 
@@ -14,6 +16,9 @@ class Sections extends StatefulWidget {
 }
 
 class _SectionsState extends State<Sections> {
+  static FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+  static FirebaseAnalyticsObserver observer =
+      FirebaseAnalyticsObserver(analytics: analytics);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,26 +53,40 @@ class _SectionsState extends State<Sections> {
                   ],
                 ),
               ),
+              StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection("foods")
+                      .orderBy("title", descending: true)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Text(
+                        'No User Data...',
+                      );
+                    } else {
+                      List<QueryDocumentSnapshot<Object?>>
+                          firestoreauthentic= snapshot.data!.docs;
+                      return 
               SizedBox(
                 height: MediaQuery.of(context).size.height - 102.918,
                 child: ListView.builder(
                     shrinkWrap: true,
-                    itemCount: sec1.length,
+                    itemCount: firestoreauthentic.length,
                     scrollDirection: Axis.vertical,
                     itemBuilder: (context, index) {
-                      if (widget.title == sec1[index]["type"]) {
+                      if (widget.title == firestoreauthentic[index]["category"]) {
                         return Sectionlist(
-                          img: sec1[index]["url"].toString(),
-                          txt: sec1[index]["name"].toString(),
-                          txt2: sec1[index]["text"].toString(),
+                          img: firestoreauthentic[index]["image"].toString(),
+                          txt: firestoreauthentic[index]["title"].toString(),
+                          txt2: firestoreauthentic[index]["price"].toString(),
                           onTap: () {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                     builder: ((context) => Order(
-                                          desc: sec1[index]["rs"].toString(),
-                                          title: sec1[index]["name"].toString(),
-                                          url: sec1[index]["url"].toString(),
+                                          desc: firestoreauthentic[index]["price"].toString(),
+                                          title: firestoreauthentic[index]["title"].toString(),
+                                          url: firestoreauthentic[index]["image"].toString(), analytics: analytics, observer: observer,
                                         ))));
                           },
                         );
@@ -75,7 +94,8 @@ class _SectionsState extends State<Sections> {
                         return const SizedBox();
                       }
                     }),
-              ),
+              );
+  }}),
             ],
           ),
         ),
@@ -141,7 +161,14 @@ class _FoodItemsState extends State<Sectionlist> {
                 height: 12,
               ),
               Row(
-                children: [
+                children:  [
+                  const Text("Rs.",
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: Color.fromARGB(255, 136, 135, 135)),
+                  ),
+                  const SizedBox(width: 5,),
                   Text(
                     widget.txt2,
                     style: const TextStyle(
@@ -169,7 +196,9 @@ class _FoodItemsState extends State<Sectionlist> {
           const Spacer(),
           ClipRRect(
               borderRadius: BorderRadius.circular(17),
-              child: Image.asset(
+              child: CachedNetworkImage(
+                fadeInDuration: const Duration(milliseconds: 0),
+                imageUrl:
                 widget.img,
                 height: 115,
                 width: 135,

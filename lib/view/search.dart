@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:khana/view/tabView1.dart';
-import 'package:khana/view/tabView2.dart';
+import 'package:khana/view/tabview1.dart';
+import 'package:khana/view/tabview2.dart';
 
-class Search extends StatefulWidget {
-  const Search({Key? key}) : super(key: key);
+class SearchView extends StatefulWidget {
+  const SearchView({Key? key}) : super(key: key);
 
   @override
-  State<Search> createState() => _SearchState();
+  State<SearchView> createState() => _SearchViewState();
 }
 
-class _SearchState extends State<Search> {
+class _SearchViewState extends State<SearchView> {
   final nameHolder = TextEditingController();
   clearTextInput() {
     nameHolder.clear();
   }
+
+  String name = "";
 
   @override
   Widget build(BuildContext context) {
@@ -21,73 +23,18 @@ class _SearchState extends State<Search> {
       length: 2,
       child: Scaffold(
           appBar: AppBar(
-            backgroundColor: Colors.white,
+            backgroundColor: const Color.fromARGB(255, 236, 236, 236),
             elevation: 0.0,
-            centerTitle: true,
             automaticallyImplyLeading: false,
-            actions: [
-              Row(
-                children: [
-                  const SizedBox(
-                    width: 20,
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Icon(
-                      Icons.arrow_back_ios,
-                      color: Colors.black,
-                      size: 21,
-                    ),
-                  ),
-                  const SizedBox(
-                    width: 15,
-                  ),
-                ],
-              ),
-            ],
-            title: Container(
-              width: double.infinity,
-              height: 40,
-              decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(5),
-                  border: const Border(
-                    top: BorderSide(
-                        width: 1, color: Color.fromARGB(255, 124, 123, 123)),
-                    left: BorderSide(
-                        width: 1, color: Color.fromARGB(255, 124, 123, 123)),
-                    right: BorderSide(
-                        width: 1, color: Color.fromARGB(255, 124, 123, 123)),
-                    bottom: BorderSide(
-                        width: 1, color: Color.fromARGB(255, 124, 123, 123)),
-                  )),
-              child: Center(
-                child: TextField(
-                  controller: nameHolder,
-                  autofocus: true,
-                  textInputAction: TextInputAction.search,
-                  decoration: InputDecoration(
-                      prefixIcon: const Icon(
-                        Icons.search,
-                        color: Colors.blue,
-                      ),
-                      suffixIcon: IconButton(
-                        icon: const Icon(
-                          Icons.clear,
-                          color: Color.fromARGB(186, 244, 67, 54),
-                        ),
-                        onPressed: clearTextInput,
-                      ),
-                      hintText: 'Search...',
-                      border: InputBorder.none),
-                ),
-              ),
+            title: const Padding(
+              padding: EdgeInsets.only(left: 8.0, top: 20),
+              child: Text("Search Items"),
             ),
+            titleTextStyle: const TextStyle(
+                color: Colors.black, fontSize: 20, fontWeight: FontWeight.w600),
             bottom: const TabBar(
                 indicatorColor: Colors.green,
-                unselectedLabelColor: Colors.grey,
+                unselectedLabelColor: Color.fromARGB(255, 138, 137, 137),
                 tabs: [
                   Padding(
                     padding: EdgeInsets.all(10),
