@@ -3,10 +3,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:khana/list/list.dart';
 import 'package:khana/provider/google_sign_in.dart';
+import 'package:khana/remote_config.dart';
 import 'package:khana/view/edit.dart';
 import 'package:khana/view/settings.dart';
 import 'package:provider/provider.dart';
@@ -16,14 +18,21 @@ import 'package:provider/provider.dart';
 enum popupBtn { settings, logout }
 
 class Profile extends StatefulWidget {
-  const Profile({Key? key}) : super(key: key);
+  final FirebaseRemoteConfig remoteConfigData;
+  const Profile({Key? key, required this.remoteConfigData}) : super(key: key);
 
   @override
   State<Profile> createState() => _ProfileState();
 }
 
 class _ProfileState extends State<Profile> {
+  static RemoteConfigService remoteService = RemoteConfigService();
   final box = GetStorage();
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -245,7 +254,9 @@ class _ProfileState extends State<Profile> {
                                         width: 22,
                                       ),
                                       SizedBox(
-                                        width: MediaQuery.of(context).size.width/1.9,
+                                        width:
+                                            MediaQuery.of(context).size.width /
+                                                1.9,
                                         child: Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
@@ -263,18 +274,16 @@ class _ProfileState extends State<Profile> {
                                             const SizedBox(
                                               height: 9,
                                             ),
-                                           FittedBox(
-                                             child: Text(
-                                                  firestoreItems[index]['email'],
-                                                  style: const TextStyle(
-                                                      fontSize: 14,
-                                                      fontWeight: FontWeight.w400,
-                                                      color: Color.fromARGB(
-                                                          255, 95, 95, 95)),
-                                                
-                                                
+                                            FittedBox(
+                                              child: Text(
+                                                firestoreItems[index]['email'],
+                                                style: const TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w400,
+                                                    color: Color.fromARGB(
+                                                        255, 95, 95, 95)),
                                               ),
-                                           ),
+                                            ),
                                             const SizedBox(
                                               height: 9,
                                             ),
@@ -363,16 +372,16 @@ class _ProfileState extends State<Profile> {
                         height: 15,
                       ),
                       Row(
-                        children: const [
+                        children: [
                           Text(
-                            "Favorites",
-                            style: TextStyle(
+                            widget.remoteConfigData.getString('audience'),
+                            style: const TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.w600),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             width: 10,
                           ),
-                          Icon(
+                          const Icon(
                             Icons.favorite,
                             size: 21,
                             color: Color.fromARGB(255, 243, 143, 136),
@@ -390,53 +399,11 @@ class _ProfileState extends State<Profile> {
                           crossAxisSpacing: 20,
                           mainAxisSpacing: 30,
                           crossAxisCount: 3,
-                          children: <Widget>[
-                            Grid(
-                              img: data2[0]["url"],
-                              txt: data2[0]["name"],
-                              txt1: data2[0]["text"],
-                            ),
-                            Grid(
-                              img: data2[1]["url"],
-                              txt: data2[1]["name"],
-                              txt1: data2[1]["text"],
-                            ),
-                            Grid(
-                              img: data2[3]["url"],
-                              txt: data2[3]["name"],
-                              txt1: data2[3]["text"],
-                            ),
-                            Grid(
-                              img: data2[4]["url"],
-                              txt: data2[4]["name"],
-                              txt1: data2[4]["text"],
-                            ),
-                            Grid(
-                              img: data2[5]["url"],
-                              txt: data2[5]["name"],
-                              txt1: data2[5]["text"],
-                            ),
-                            Grid(
-                              img: data2[6]["url"],
-                              txt: data2[6]["name"],
-                              txt1: data2[6]["text"],
-                            ),
-                            Grid(
-                              img: data2[7]["url"],
-                              txt: data2[7]["name"],
-                              txt1: data2[7]["text"],
-                            ),
-                            Grid(
-                              img: data2[8]["url"],
-                              txt: data2[8]["name"],
-                              txt1: data2[8]["text"],
-                            ),
-                            Grid(
-                              img: data2[9]["url"],
-                              txt: data2[9]["name"],
-                              txt1: data2[9]["text"],
-                            ),
-                          ],
+                          children: List.generate(9, (index) => Grid(
+                            img: data2[index]['url'],
+                            txt:data2[index]['name'] ,
+                            txt1:data2[index]['text'] ,
+                          ))
                         ),
                       ),
                       const SizedBox(
@@ -520,3 +487,6 @@ class _GridState extends State<Grid> {
     ]);
   }
 }
+
+
+

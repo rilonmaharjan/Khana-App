@@ -6,7 +6,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:khana/view/searchh.dart';
 
-import 'foodsClass.dart';
+import 'foods_class.dart';
 import 'order.dart';
 
 class Restaurant extends StatefulWidget {

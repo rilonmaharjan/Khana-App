@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:khana/provider/google_sign_in.dart';
 import 'package:khana/remote_config.dart';
-import 'package:khana/view/forgotPassword.dart';
+import 'package:khana/view/forgot_password.dart';
 import 'package:khana/view/register.dart';
 import 'package:provider/provider.dart';
 

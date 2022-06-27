@@ -25,47 +25,54 @@ class _BottomNavState extends State<BottomNav> {
   int _selectedIndex = 0;
   static RemoteConfigService remoteService = RemoteConfigService();
   List pages = [
+
+
+    //Khana
     FutureBuilder<FirebaseRemoteConfig>(
         future: remoteService.setRemoteConfig(),
         builder: (context, AsyncSnapshot<FirebaseRemoteConfig> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              body: CircularProgressIndicator(),
-            );
-          }
           if (snapshot.hasData) {
             return Khana(remoteConfigData: snapshot.requireData);
           }
           return const Text("No text");
         }),
+
+
+    //Search
     const SearchView(),
+
+
+    //Food
     FutureBuilder<FirebaseRemoteConfig>(
         future: remoteService.setRemoteConfig(),
         builder: (context, AsyncSnapshot<FirebaseRemoteConfig> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              body: CircularProgressIndicator(),
-            );
-          }
           if (snapshot.hasData) {
             return Food(remoteConfigData: snapshot.requireData);
           }
           return const Text("No text");
         }),
+
+
+    //Cart
     FutureBuilder<FirebaseRemoteConfig>(
         future: remoteService.setRemoteConfig(),
         builder: (context, AsyncSnapshot<FirebaseRemoteConfig> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              body: CircularProgressIndicator(),
-            );
-          }
           if (snapshot.hasData) {
             return Cart(remoteConfigData: snapshot.requireData);
           }
           return const Text("No text");
         }),
-    const Profile(),
+
+
+    //Profile
+    FutureBuilder<FirebaseRemoteConfig>(
+        future: remoteService.setRemoteConfig(),
+        builder: (context, AsyncSnapshot<FirebaseRemoteConfig> snapshot) {
+          if (snapshot.hasData) {
+            return Profile(remoteConfigData: snapshot.requireData);
+          }
+          return const Text("No text");
+        }),
   ];
 
   @override

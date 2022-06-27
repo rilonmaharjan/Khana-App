@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:khana/view/restaurant.dart';
-import 'package:khana/view/tabView1.dart';
+import 'package:khana/view/tabview1.dart';
 
 class Search extends StatefulWidget {
   const Search({Key? key}) : super(key: key);

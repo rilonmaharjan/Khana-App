@@ -7,10 +7,10 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:khana/remote_config.dart';
-import 'package:khana/view/foodsClass.dart';
+import 'package:khana/view/foods_class.dart';
 import 'package:khana/view/order.dart';
 import 'package:khana/view/restaurant.dart';
-import 'package:khana/view/tabView1.dart';
+import 'package:khana/view/tabview1.dart';
 
 class Food extends StatefulWidget {
   final FirebaseRemoteConfig remoteConfigData;
