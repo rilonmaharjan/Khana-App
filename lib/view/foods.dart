@@ -62,7 +62,7 @@ class _FoodState extends State<Food> {
                   if (futuresnapshot.connectionState ==
                       ConnectionState.waiting) {
                     return const Scaffold(
-                      body: CircularProgressIndicator(),
+                      body: SizedBox(child: CircularProgressIndicator()),
                     );
                   }
                   if (futuresnapshot.hasData) {

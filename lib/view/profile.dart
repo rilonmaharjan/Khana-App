@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:khana/list/list.dart';
 import 'package:khana/provider/google_sign_in.dart';
-import 'package:khana/remote_config.dart';
 import 'package:khana/view/edit.dart';
 import 'package:khana/view/settings.dart';
 import 'package:provider/provider.dart';
@@ -26,7 +25,7 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  static RemoteConfigService remoteService = RemoteConfigService();
+  // static RemoteConfigService remoteService = RemoteConfigService();
   final box = GetStorage();
 
   @override
